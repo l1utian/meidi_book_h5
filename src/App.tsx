@@ -99,7 +99,7 @@ const App = () => {
   };
 
   const handleChangeTime = (_obj, value) => {
-    if (value[0]) {
+    if (value?.[0]) {
       setAppointmentDateChange(value[0]);
       const details = allAppointmentTimeData?.data?.find(
         (v) => v?.subDate === value[0]
