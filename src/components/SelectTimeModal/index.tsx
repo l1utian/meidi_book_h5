@@ -1,7 +1,14 @@
 import { Picker } from "@nutui/nutui-react";
 import "./index.scss";
 
-const GoodModal = ({
+interface PickerOption {
+  text: string | number;
+  value: string | number;
+  disabled?: boolean;
+  children?: PickerOption[];
+  className?: string | number;
+}
+const SelectTimeModal = ({
   visible,
   value,
   onClose,
@@ -9,7 +16,10 @@ const GoodModal = ({
   onChange,
   options,
 }) => {
-  const confirmPicker = (_options: any[], values: (string | number)[]) => {
+  const confirmPicker = (
+    _options: PickerOption[],
+    values: (string | number)[]
+  ) => {
     onConfirm(values);
   };
 
@@ -21,9 +31,9 @@ const GoodModal = ({
       options={options}
       onClose={onClose}
       value={value}
-      onConfirm={confirmPicker}
+      onConfirm={(list, values) => confirmPicker(list, values)}
       onChange={onChange}
     />
   );
 };
-export default GoodModal;
+export default SelectTimeModal;

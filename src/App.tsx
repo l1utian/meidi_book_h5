@@ -6,6 +6,7 @@ import { formatLocation } from "@/utils/tool";
 import SelectTimeModal from "@/components/SelectTimeModal";
 import { useRequest } from "ahooks";
 import { postOrderAppointmentTimeList } from "@/api";
+import { Toast } from "@nutui/nutui-react";
 import "./App.scss";
 
 const App = () => {
@@ -43,7 +44,7 @@ const App = () => {
         };
       }) ?? []
     );
-  }, [allAppointmentTimeData]);
+  }, [allAppointmentTimeData?.data]);
 
   // 预约时间段表
   const appointmentTimeList = useMemo(() => {
@@ -55,7 +56,7 @@ const App = () => {
           value: v,
         })) ?? []
     );
-  }, [allAppointmentTimeData, appointmentDateChange]);
+  }, [allAppointmentTimeData?.data, appointmentDateChange]);
 
   const handleSelect = (value: [string, string]) => {
     setAppointmentDate(value[0] || appointmentDateChange);
@@ -89,9 +90,22 @@ const App = () => {
       })
       ?.catch((err) => {
         if (err?.message) {
-          console.log(err.message);
+          Toast.show({
+            content: err?.message,
+            icon: "fail",
+          });
         }
       });
+  };
+
+  const handleChangeTime = (_obj, value) => {
+    if (value[0]) {
+      setAppointmentDateChange(value[0]);
+      const details = allAppointmentTimeData?.data?.find(
+        (v) => v?.subDate === value[0]
+      )?.details;
+      setAppointmentTimeChange(details?.[0] ?? "");
+    }
   };
   return (
     <>
@@ -141,6 +155,7 @@ const App = () => {
             <ArrowRight />
           </div>
         </div>
+
         <Button block type="primary" onClick={handleSave} loading={false}>
           立即预约
         </Button>
@@ -158,7 +173,7 @@ const App = () => {
           visible={timeVisible}
           value={[appointmentDate, appointmentTime]}
           onConfirm={handleSelect}
-          onChange={handleChange}
+          onChange={handleChangeTime}
           onClose={() => setTimeVisible(false)}
         />
       </div>
