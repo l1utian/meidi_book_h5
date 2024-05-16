@@ -1,6 +1,6 @@
 import { getAvailableAddressList } from "@/api";
 import { isValidChineseEnglishInput } from "@/utils/tool";
-import { useSetState } from "ahooks";
+import { useSetState, useRequest } from "ahooks";
 
 interface FormState {
   name: string;
@@ -29,7 +29,7 @@ const setAddressList = (data, leaf = false) => {
   });
 };
 
-const useAddress = () => {
+const useAddress = ({ code }) => {
   const [formState, setFormState] = useSetState<FormState>({
     name: "",
     tel: "",
@@ -44,6 +44,11 @@ const useAddress = () => {
     addressDetail: "",
     appointmentDate: "",
     appointmentTime: "",
+  });
+
+  // 可预约时间
+  const { runAsync } = useRequest(getAvailableAddressList, {
+    manual: true,
   });
 
   const handleChange = (key: string, value: any) => {
@@ -129,18 +134,19 @@ const useAddress = () => {
 
   const handleLoad = (node, resolve): any => {
     if (node.root) {
-      getAvailableAddressList({
-        regionId: "0",
-        code: "",
-      })?.then((res) => {
-        if (res?.code === 200) {
-          resolve(setAddressList(res?.data));
-        }
-      });
+      if (code) {
+        runAsync({
+          regionId: "0",
+          code,
+        })?.then((res) => {
+          if (res?.code === 200) {
+            resolve(setAddressList(res?.data));
+          }
+        });
+      }
     } else {
       const { id, level } = node;
-
-      getAvailableAddressList(id)?.then((res) => {
+      runAsync(id)?.then((res) => {
         if (res?.code === 200) {
           resolve(setAddressList(res?.data, level >= 4));
         }

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Picker } from "@nutui/nutui-react";
 import { options } from "@/components/SelectTimeData";
 import { useRequest } from "ahooks";
@@ -12,17 +12,22 @@ interface PickerOption {
   children?: PickerOption[];
   className?: string | number;
 }
-const SelectTimeModal = ({ visible, value, onClose, onConfirm }) => {
+const SelectTimeModal = ({ visible, value, onClose, onConfirm, code }) => {
   const [appointmentDateChange, setAppointmentDateChange] =
     useState<string>("");
   const [appointmentTimeChange, setAppointmentTimeChange] =
     useState<string>("");
 
+  useEffect(() => {
+    if (visible && code) {
+      run({ code });
+    }
+  }, [visible, code]);
+
   const handleConfirm = (
     _options: PickerOption[],
     values: (string | number)[]
   ) => {
-    console.log(values);
     onConfirm([
       values?.[0] || appointmentDateChange,
       values?.[1] || appointmentTimeChange,
@@ -30,10 +35,10 @@ const SelectTimeModal = ({ visible, value, onClose, onConfirm }) => {
   };
 
   // 可预约时间
-  const { data: allAppointmentTimeData } = useRequest(
+  const { data: allAppointmentTimeData, run } = useRequest(
     postOrderAppointmentTimeList,
     {
-      defaultParams: [{ code: "1" }],
+      manual: true,
       onSuccess: (res) => {
         if (res?.code === 200) {
           setAppointmentDateChange(res.data[0]?.subDate);

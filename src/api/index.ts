@@ -5,7 +5,7 @@ const BASE_API_URL = import.meta.env.API_BASE_URL;
 //【H5预约】获取订单信息
 export const getOrderInfo = async (params: { code: string }): Promise<any> => {
   const response = await axios.post(
-    `${BASE_API_URL}/book/areaList/book/getOrderInfo`,
+    `${BASE_API_URL}/book/getOrderInfo`,
     params
   );
   return response.data;
@@ -24,7 +24,10 @@ export const getAvailableAddressList = async (params: {
 export const postOrderAppointmentTimeList = async (params: {
   code: string;
 }): Promise<any> => {
-  const response = await axios.post("/book/appointmentTimeList", params);
+  const response = await axios.post(
+    `${BASE_API_URL}/book/appointmentTimeList`,
+    params
+  );
   return response.data;
 };
 
