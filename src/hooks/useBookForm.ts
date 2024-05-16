@@ -14,7 +14,8 @@ interface FormState {
   street: string;
   streetCode: number;
   addressDetail: string;
-  isDefault: number;
+  appointmentDate?: string;
+  appointmentTime?: string;
 }
 
 const setAddressList = (data, leaf = false) => {
@@ -41,15 +42,12 @@ const useAddress = () => {
     street: "",
     streetCode: 0,
     addressDetail: "",
-    isDefault: 0,
+    appointmentDate: "",
+    appointmentTime: "",
   });
 
   const handleChange = (key: string, value: any) => {
-    if (key === "isDefault") {
-      setFormState({ [key]: value ? 1 : 0 });
-    } else {
-      setFormState({ [key]: value } as any);
-    }
+    setFormState({ [key]: value } as any);
   };
 
   const handleAddressChange = (_selectValue: unknown, value: any) => {
@@ -68,8 +66,17 @@ const useAddress = () => {
 
   const validate = () => {
     return new Promise((resolve, reject) => {
-      const { name, tel, province, city, county, street, addressDetail } =
-        formState;
+      const {
+        name,
+        tel,
+        province,
+        city,
+        county,
+        street,
+        addressDetail,
+        appointmentDate,
+        appointmentTime,
+      } = formState;
       if (!name) {
         reject({
           status: "error",
@@ -106,6 +113,12 @@ const useAddress = () => {
           message: "请填写详细地址",
         });
       }
+      if (!appointmentDate || !appointmentTime) {
+        reject({
+          status: "error",
+          message: "请选择上门时间",
+        });
+      }
       resolve({
         status: "success",
         message: "校验通过",
@@ -134,6 +147,13 @@ const useAddress = () => {
       });
     }
   };
+
+  const handleAppointmentTime = (appointmentDate, appointmentTime) => {
+    setFormState({
+      appointmentDate,
+      appointmentTime,
+    });
+  };
   return {
     formState,
     setFormState,
@@ -141,6 +161,7 @@ const useAddress = () => {
     handleAddressChange,
     validate,
     handleLoad,
+    handleAppointmentTime,
   };
 };
 export default useAddress;

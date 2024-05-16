@@ -1,70 +1,29 @@
 import { useState, useMemo } from "react";
 import { Input, TextArea, Button, Cascader } from "@nutui/nutui-react";
 import { ArrowRight } from "@nutui/icons-react";
-import useAddress from "@/hooks/useAddress";
+import useBookForm from "@/hooks/useBookForm";
 import { formatLocation } from "@/utils/tool";
 import SelectTimeModal from "@/components/SelectTimeModal";
-import { useRequest } from "ahooks";
-import { postOrderAppointmentTimeList } from "@/api";
+
 import { Toast } from "@nutui/nutui-react";
 import "./App.scss";
 
 const App = () => {
   const [visible, setVisible] = useState<boolean>(false);
-  const [timeVisible, setTimeVisible] = useState<boolean>(false);
+  const [selectTimeVisible, setSelectTimeVisible] = useState<boolean>(false);
 
-  const [appointmentDate, setAppointmentDate] = useState<string>("");
-  const [appointmentTime, setAppointmentTime] = useState<string>("");
-  const [appointmentDateChange, setAppointmentDateChange] =
-    useState<string>("");
-  const [appointmentTimeChange, setAppointmentTimeChange] =
-    useState<string>("");
-
-  // 可预约时间
-  const { data: allAppointmentTimeData } = useRequest(
-    postOrderAppointmentTimeList,
-    {
-      defaultParams: [{ code: "1" }],
-      onSuccess: (res) => {
-        if (res?.code === 200) {
-          setAppointmentDateChange(res.data[0]?.subDate);
-          setAppointmentTimeChange(res?.data[0]?.details?.[0]);
-        }
-      },
-    }
-  );
-
-  // 预约日期列表
-  const appointmentDateList = useMemo(() => {
-    return (
-      allAppointmentTimeData?.data?.map((v) => {
-        return {
-          text: v?.subDate,
-          value: v?.subDate,
-        };
-      }) ?? []
-    );
-  }, [allAppointmentTimeData?.data]);
-
-  // 预约时间段表
-  const appointmentTimeList = useMemo(() => {
-    return (
-      allAppointmentTimeData?.data
-        ?.find((v) => v?.subDate === appointmentDateChange)
-        ?.details?.map((v) => ({
-          text: v,
-          value: v,
-        })) ?? []
-    );
-  }, [allAppointmentTimeData?.data, appointmentDateChange]);
+  const {
+    formState,
+    handleChange,
+    handleAddressChange,
+    validate,
+    handleLoad,
+    handleAppointmentTime,
+  } = useBookForm();
 
   const handleSelect = (value: [string, string]) => {
-    setAppointmentDate(value[0] || appointmentDateChange);
-    setAppointmentTime(value[1] || appointmentTimeChange);
+    handleAppointmentTime(value[0], value[1]);
   };
-
-  const { formState, handleChange, handleAddressChange, validate, handleLoad } =
-    useAddress();
 
   const address = useMemo(() => {
     return formState?.province
@@ -83,9 +42,6 @@ const App = () => {
   const handleSave = () => {
     validate()
       .then((res) => {
-        // if (res?.data) {
-        //   console.log(res?.data);
-        // }
         console.log(res);
       })
       ?.catch((err) => {
@@ -98,15 +54,6 @@ const App = () => {
       });
   };
 
-  const handleChangeTime = (_obj, value) => {
-    if (value?.[0]) {
-      setAppointmentDateChange(value[0]);
-      const details = allAppointmentTimeData?.data?.find(
-        (v) => v?.subDate === value[0]
-      )?.details;
-      setAppointmentTimeChange(details?.[0] ?? "");
-    }
-  };
   return (
     <>
       <div className="addAddress">
@@ -144,12 +91,15 @@ const App = () => {
           />
         </div>
 
-        <div className="addAddress-input" onClick={() => setTimeVisible(true)}>
+        <div
+          className="addAddress-input"
+          onClick={() => setSelectTimeVisible(true)}
+        >
           <span className="addAddress-input-label">期望上门时间</span>
           <div className="addAddress-input-value">
             <span className="addAddress-input-label">
-              {appointmentDate && appointmentTime
-                ? `${appointmentDate} ${appointmentTime}`
+              {formState?.appointmentDate && formState?.appointmentTime
+                ? `${formState?.appointmentDate} ${formState?.appointmentTime}`
                 : "请选择"}
             </span>
             <ArrowRight />
@@ -169,12 +119,10 @@ const App = () => {
           onLoad={handleLoad}
         />
         <SelectTimeModal
-          options={[appointmentDateList, appointmentTimeList]}
-          visible={timeVisible}
-          value={[appointmentDate, appointmentTime]}
+          visible={selectTimeVisible}
+          value={[formState?.appointmentDate, formState?.appointmentTime]}
           onConfirm={handleSelect}
-          onChange={handleChangeTime}
-          onClose={() => setTimeVisible(false)}
+          onClose={() => setSelectTimeVisible(false)}
         />
       </div>
     </>

@@ -1,4 +1,8 @@
+import { useState, useMemo } from "react";
 import { Picker } from "@nutui/nutui-react";
+import { options } from "@/components/SelectTimeData";
+import { useRequest } from "ahooks";
+import { postOrderAppointmentTimeList } from "@/api";
 import "./index.scss";
 
 interface PickerOption {
@@ -8,31 +12,80 @@ interface PickerOption {
   children?: PickerOption[];
   className?: string | number;
 }
-const SelectTimeModal = ({
-  visible,
-  value,
-  onClose,
-  onConfirm,
-  onChange,
-  options,
-}) => {
-  const confirmPicker = (
+const SelectTimeModal = ({ visible, value, onClose, onConfirm }) => {
+  const [appointmentDateChange, setAppointmentDateChange] =
+    useState<string>("");
+  const [appointmentTimeChange, setAppointmentTimeChange] =
+    useState<string>("");
+
+  const handleConfirm = (
     _options: PickerOption[],
     values: (string | number)[]
   ) => {
-    onConfirm(values);
+    console.log(values);
+    onConfirm([
+      values?.[0] || appointmentDateChange,
+      values?.[1] || appointmentTimeChange,
+    ]);
   };
+
+  // 可预约时间
+  const { data: allAppointmentTimeData } = useRequest(
+    postOrderAppointmentTimeList,
+    {
+      defaultParams: [{ code: "1" }],
+      onSuccess: (res) => {
+        if (res?.code === 200) {
+          setAppointmentDateChange(res.data[0]?.subDate);
+          setAppointmentTimeChange(res?.data[0]?.details?.[0]);
+        }
+      },
+    }
+  );
+
+  const handleChangeTime = (_obj, value) => {
+    if (value?.[0]) {
+      setAppointmentDateChange(value[0]);
+      const details = allAppointmentTimeData?.data?.find(
+        (v) => v?.subDate === value[0]
+      )?.details;
+      setAppointmentTimeChange(details?.[0] ?? "");
+    }
+  };
+  // 预约日期列表
+  const appointmentDateList = useMemo(() => {
+    return (
+      allAppointmentTimeData?.data?.map((v) => {
+        return {
+          text: v?.subDate,
+          value: v?.subDate,
+        };
+      }) ?? []
+    );
+  }, [allAppointmentTimeData?.data]);
+
+  // 预约时间段表
+  const appointmentTimeList = useMemo(() => {
+    return (
+      allAppointmentTimeData?.data
+        ?.find((v) => v?.subDate === appointmentDateChange)
+        ?.details?.map((v) => ({
+          text: v,
+          value: v,
+        })) ?? []
+    );
+  }, [allAppointmentTimeData?.data, appointmentDateChange]);
 
   return (
     <Picker
       className="time-select-modal"
+      options={[options?.[0], options?.[1]]}
       title="选择上门时间"
       visible={visible}
-      options={options}
       onClose={onClose}
       value={value}
-      onConfirm={(list, values) => confirmPicker(list, values)}
-      onChange={onChange}
+      onConfirm={(list, values) => handleConfirm(list, values)}
+      onChange={handleChangeTime}
     />
   );
 };

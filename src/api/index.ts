@@ -30,20 +30,21 @@ export const postOrderAppointmentTimeList = async (params: {
 
 // 【H5预约】提交预约
 export const submitOrder = async (params: {
-  code: string;
-  tel: string;
-  name: string;
-  province: string;
-  city: string;
-  county: string;
-  street: string;
-  addressDetail: string;
-  provinceCode: string;
-  cityCode: string;
-  streetCode: string;
-  appointmentDate: string;
-  appointmentTime: string;
-  message: string;
+  code: string; // 订单编码
+  tel: string; // 联系号码
+  name: string; // 联系人
+  province: string; // 省份
+  provinceCode: string; // 省份编码
+  city: string; // 城市
+  cityCode: string; // 城市编码
+  county: string; //区
+  countyCode: string; //区编码
+  street: string; // 街道
+  streetCode: string; // 街道编码
+  addressDetail: string; // 详细地址
+  appointmentDate: string; // 预约日期
+  appointmentTime: string; // 预约时间
+  message: string; // 备注
 }): Promise<any> => {
   const response = await axios.post("/book/submitOrder", params);
   return response.data;
