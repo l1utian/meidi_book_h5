@@ -49,6 +49,7 @@ const useAddress = ({ code }) => {
   // 可预约时间
   const { runAsync } = useRequest(getAvailableAddressList, {
     manual: true,
+    debounceWait: 500,
   });
 
   const handleChange = (key: string, value: any) => {
@@ -133,10 +134,11 @@ const useAddress = ({ code }) => {
   };
 
   const handleLoad = (node, resolve): any => {
-    if (node.root) {
+    console.log("123");
+    if (node && node.root) {
       if (code) {
         runAsync({
-          regionId: "0",
+          regionId: "",
           code,
         })?.then((res) => {
           if (res?.code === 200) {
@@ -146,7 +148,10 @@ const useAddress = ({ code }) => {
       }
     } else {
       const { id, level } = node;
-      runAsync(id)?.then((res) => {
+      runAsync({
+        code,
+        regionId: id,
+      })?.then((res) => {
         if (res?.code === 200) {
           resolve(setAddressList(res?.data, level >= 4));
         }

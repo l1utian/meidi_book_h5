@@ -1,21 +1,35 @@
-import { useState, useMemo, useEffect } from "react";
-import { Input, TextArea, Button, Cascader } from "@nutui/nutui-react";
+import { useState, useMemo } from "react";
+import { Input, TextArea, Button, Cascader, Dialog } from "@nutui/nutui-react";
 import { ArrowRight } from "@nutui/icons-react";
 import useBookForm from "@/hooks/useBookForm";
-import { getOrderInfo } from "@/api";
+import { getOrderInfo, postSubmitOrder } from "@/api";
 import { formatLocation } from "@/utils/tool";
 import SelectTimeModal from "@/components/SelectTimeModal";
 import { Toast } from "@nutui/nutui-react";
 import { useParams } from "react-router-dom";
+import { useRequest, useDebounceEffect } from "ahooks";
 import "./index.scss";
 
 const Book = () => {
   const [orderInfo, setOrderInfo] = useState<any>({});
   const [visible, setVisible] = useState<boolean>(false);
   const [selectTimeVisible, setSelectTimeVisible] = useState<boolean>(false);
+  const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
   const { code } = useParams() || {
     code: null,
   };
+
+  // 获取订单详情
+  const { runAsync, refresh } = useRequest(getOrderInfo, {
+    manual: true,
+  });
+  // 提交预约
+  const { runAsync: postRun, loading: postLoading } = useRequest(
+    postSubmitOrder,
+    {
+      manual: true,
+    }
+  );
   const {
     formState,
     handleChange,
@@ -29,35 +43,41 @@ const Book = () => {
     handleAppointmentTime(value[0], value[1]);
   };
 
-  useEffect(() => {
-    if (code) {
-      getOrderInfo({ code }).then((res) => {
-        if (res?.code === 200) {
-          setOrderInfo(res?.data);
-        } else {
-          Toast.show({
-            content: res?.msg,
-            icon: "fail",
-            duration: 0,
-            closeOnOverlayClick: false,
-            style: {
-              background: "rgba(0, 0, 0, 0.7)",
-            },
-          });
-        }
-      });
-    } else {
-      Toast.show({
-        content: "未获取到预约编码",
-        icon: "fail",
-        duration: 0,
-        closeOnOverlayClick: false,
-        style: {
-          background: "rgba(0, 0, 0, 0.7)",
-        },
-      });
+  useDebounceEffect(
+    () => {
+      if (code) {
+        runAsync({ code }).then((res) => {
+          if (res?.code === 200) {
+            setOrderInfo(res?.data);
+          } else {
+            Toast.show({
+              content: res?.msg,
+              icon: "fail",
+              duration: 0,
+              closeOnOverlayClick: false,
+              style: {
+                background: "rgba(0, 0, 0, 0.7)",
+              },
+            });
+          }
+        });
+      } else {
+        Toast.show({
+          content: "未获取到预约编码",
+          icon: "fail",
+          duration: 0,
+          closeOnOverlayClick: false,
+          style: {
+            background: "rgba(0, 0, 0, 0.7)",
+          },
+        });
+      }
+    },
+    [code],
+    {
+      wait: 500,
     }
-  }, [code]);
+  );
 
   const address = useMemo(() => {
     return formState?.province
@@ -75,8 +95,22 @@ const Book = () => {
 
   const handleSave = () => {
     validate()
-      .then((res) => {
-        console.log(res);
+      .then((res: any) => {
+        const { data } = res;
+
+        postRun({
+          ...data,
+          code,
+        }).then((res) => {
+          if (res?.code === 200) {
+            setConfirmVisible(true);
+          } else {
+            Toast.show({
+              content: res?.msg,
+              icon: "fail",
+            });
+          }
+        });
       })
       ?.catch((err) => {
         if (err?.message) {
@@ -86,6 +120,11 @@ const Book = () => {
           });
         }
       });
+  };
+
+  const handleConfirm = () => {
+    setConfirmVisible(false);
+    refresh();
   };
 
   return (
@@ -139,8 +178,14 @@ const Book = () => {
             <ArrowRight />
           </div>
         </div>
-
-        <Button block type="primary" onClick={handleSave} loading={false}>
+        {/* 提交成功后，刷新订单详情，若为服务中状态。不可再次预约 */}
+        <Button
+          block
+          type="primary"
+          onClick={handleSave}
+          loading={postLoading}
+          disabled={orderInfo?.orderStatus === 202}
+        >
           立即预约
         </Button>
         <Cascader
@@ -149,16 +194,24 @@ const Book = () => {
           closeable
           onClose={() => setVisible(false)}
           onChange={handleAddressChange}
-          lazy
+          lazy={true}
           onLoad={handleLoad}
         />
         <SelectTimeModal
-          code="121212"
+          code={code}
           visible={selectTimeVisible}
           value={[formState?.appointmentDate, formState?.appointmentTime]}
           onConfirm={handleSelect}
           onClose={() => setSelectTimeVisible(false)}
         />
+        <Dialog
+          hideCancelButton={true}
+          title="预约成功"
+          onConfirm={handleConfirm}
+          visible={confirmVisible}
+        >
+          详情请见美的洗悦家小程序
+        </Dialog>
       </div>
     </>
   );

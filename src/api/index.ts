@@ -32,7 +32,7 @@ export const postOrderAppointmentTimeList = async (params: {
 };
 
 // 【H5预约】提交预约
-export const submitOrder = async (params: {
+export const postSubmitOrder = async (params: {
   code: string; // 订单编码
   tel: string; // 联系号码
   name: string; // 联系人

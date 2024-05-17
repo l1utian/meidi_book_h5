@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
 import { Picker } from "@nutui/nutui-react";
-import { options } from "@/components/SelectTimeData";
 import { useRequest } from "ahooks";
 import { postOrderAppointmentTimeList } from "@/api";
 import "./index.scss";
@@ -84,7 +83,7 @@ const SelectTimeModal = ({ visible, value, onClose, onConfirm, code }) => {
   return (
     <Picker
       className="time-select-modal"
-      options={[options?.[0], options?.[1]]}
+      options={[appointmentDateList, appointmentTimeList]}
       title="选择上门时间"
       visible={visible}
       onClose={onClose}

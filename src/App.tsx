@@ -15,6 +15,7 @@ const darkTheme = {
   nutuiColorPrimary: "#0092d8",
   nutuiColorPrimaryStop1: "#0092d8",
   nutuiColorPrimaryStop2: "#0092d8",
+  nutuiButtonPrimary: "#0092d8",
 };
 
 const App: FC = () => {
