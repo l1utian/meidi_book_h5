@@ -136,7 +136,7 @@ const Book = () => {
       if (res?.code === 200) {
         setConfirmVisible(false);
         Toast.show({
-          content: "预约成功",
+          content: "预约成功，以网点预约上门时间为准",
           icon: "success",
         });
         refresh();
