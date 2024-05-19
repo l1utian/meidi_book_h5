@@ -49,6 +49,6 @@ export const postSubmitOrder = async (params: {
   appointmentTime: string; // 预约时间
   message: string; // 备注
 }): Promise<any> => {
-  const response = await axios.post("/book/submitOrder", params);
+  const response = await axios.post(`${BASE_API_URL}/book/submit`, params);
   return response.data;
 };

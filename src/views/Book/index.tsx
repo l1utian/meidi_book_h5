@@ -1,5 +1,13 @@
 import { useState, useMemo } from "react";
-import { Input, TextArea, Button, Cascader, Dialog } from "@nutui/nutui-react";
+import {
+  Input,
+  TextArea,
+  Button,
+  Cascader,
+  Dialog,
+  NavBar,
+  Image,
+} from "@nutui/nutui-react";
 import { ArrowRight } from "@nutui/icons-react";
 import useBookForm from "@/hooks/useBookForm";
 import { getOrderInfo, postSubmitOrder } from "@/api";
@@ -8,6 +16,7 @@ import SelectTimeModal from "@/components/SelectTimeModal";
 import { Toast } from "@nutui/nutui-react";
 import { useParams } from "react-router-dom";
 import { useRequest, useDebounceEffect } from "ahooks";
+import Logo from "@/assets/logo.png";
 import "./index.scss";
 
 const Book = () => {
@@ -24,12 +33,9 @@ const Book = () => {
     manual: true,
   });
   // 提交预约
-  const { runAsync: postRun, loading: postLoading } = useRequest(
-    postSubmitOrder,
-    {
-      manual: true,
-    }
-  );
+  const { runAsync: postRun } = useRequest(postSubmitOrder, {
+    manual: true,
+  });
   const {
     formState,
     handleChange,
@@ -95,22 +101,8 @@ const Book = () => {
 
   const handleSave = () => {
     validate()
-      .then((res: any) => {
-        const { data } = res;
-
-        postRun({
-          ...data,
-          code,
-        }).then((res) => {
-          if (res?.code === 200) {
-            setConfirmVisible(true);
-          } else {
-            Toast.show({
-              content: res?.msg,
-              icon: "fail",
-            });
-          }
-        });
+      .then(() => {
+        setConfirmVisible(true);
       })
       ?.catch((err) => {
         if (err?.message) {
@@ -122,13 +114,32 @@ const Book = () => {
       });
   };
 
-  const handleConfirm = () => {
-    setConfirmVisible(false);
-    refresh();
+  const handleConfirm = async () => {
+    await postRun({
+      ...(formState as any),
+      code,
+    }).then((res) => {
+      if (res?.code === 200) {
+        setConfirmVisible(false);
+        Toast.show({
+          content: "预约成功",
+          icon: "success",
+        });
+        refresh();
+      } else {
+        Toast.show({
+          content: res?.msg,
+          icon: "fail",
+        });
+      }
+    });
   };
 
   return (
     <>
+      <NavBar titleAlign="center" left={<Image src={Logo} width="30px" />}>
+        美的洗悦家预约
+      </NavBar>
       <div className="addAddress">
         <div className="addAddress-input">
           <span className="addAddress-input-label">联系人</span>
@@ -183,8 +194,8 @@ const Book = () => {
           block
           type="primary"
           onClick={handleSave}
-          loading={postLoading}
           disabled={orderInfo?.orderStatus === 202}
+          size="large"
         >
           立即预约
         </Button>
@@ -205,12 +216,13 @@ const Book = () => {
           onClose={() => setSelectTimeVisible(false)}
         />
         <Dialog
-          hideCancelButton={true}
-          title="预约成功"
+          title="提示"
+          closeOnOverlayClick={false}
           onConfirm={handleConfirm}
           visible={confirmVisible}
+          onCancel={() => setConfirmVisible(false)}
         >
-          详情请见美的洗悦家小程序
+          具体上门服务时间以工程师电话预约为准
         </Dialog>
       </div>
     </>

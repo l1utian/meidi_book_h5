@@ -16,6 +16,10 @@ const darkTheme = {
   nutuiColorPrimaryStop1: "#0092d8",
   nutuiColorPrimaryStop2: "#0092d8",
   nutuiButtonPrimary: "#0092d8",
+  nutuiNavbarBackground: "#FFF",
+  nutuiNavbarMarginBottom: "0",
+  nutuiNavbarBoxShadow: "0px 2px 5px 0px rgba(237, 238, 241, 1)",
+  nutuiButtonPrimaryDisabled: "#99deff",
 };
 
 const App: FC = () => {
