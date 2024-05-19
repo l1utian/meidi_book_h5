@@ -21,16 +21,16 @@ import Logo from "@/assets/logo.png";
 import "./index.scss";
 
 const Book = () => {
-  const [orderInfo, setOrderInfo] = useState<any>({});
   const [visible, setVisible] = useState<boolean>(false);
   const [selectTimeVisible, setSelectTimeVisible] = useState<boolean>(false);
   const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
+  const [submitDisabled, setSubmitDisabled] = useState<boolean>(false);
   const { code } = useParams() || {
     code: null,
   };
 
   // 获取订单详情
-  const { runAsync, refresh } = useRequest(getOrderInfo, {
+  const { runAsync } = useRequest(getOrderInfo, {
     manual: true,
   });
   // 提交预约
@@ -55,6 +55,7 @@ const Book = () => {
       runAsync({ code }).then((res) => {
         if (res?.code === 200) {
           if (res?.data?.orderStatus !== 201) {
+            setSubmitDisabled(true);
             return Toast.show({
               content: `该订单${
                 orderStatusText[res?.data?.orderStatus] || "不在可预约状态内"
@@ -67,8 +68,8 @@ const Book = () => {
               },
             });
           }
-          setOrderInfo(res?.data);
         } else {
+          setSubmitDisabled(true);
           Toast.show({
             content: res?.msg,
             icon: "fail",
@@ -129,11 +130,12 @@ const Book = () => {
     }).then((res) => {
       if (res?.code === 200) {
         setConfirmVisible(false);
+        setSubmitDisabled(true);
         Toast.show({
           content: "预约成功，以网点预约上门时间为准",
           icon: "success",
+          duration: 0,
         });
-        refresh();
       } else {
         Toast.show({
           content: res?.msg,
@@ -202,7 +204,7 @@ const Book = () => {
           block
           type="primary"
           onClick={handleSave}
-          disabled={orderInfo?.orderStatus !== 201}
+          disabled={submitDisabled}
           size="large"
         >
           立即预约
