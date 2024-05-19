@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Input,
   TextArea,
@@ -15,7 +15,7 @@ import { formatLocation } from "@/utils/tool";
 import SelectTimeModal from "@/components/SelectTimeModal";
 import { Toast } from "@nutui/nutui-react";
 import { useParams } from "react-router-dom";
-import { useRequest, useDebounceEffect } from "ahooks";
+import { useRequest } from "ahooks";
 import { orderStatusText } from "@/constants";
 import Logo from "@/assets/logo.png";
 import "./index.scss";
@@ -50,28 +50,15 @@ const Book = () => {
     handleAppointmentTime(value[0], value[1]);
   };
 
-  useDebounceEffect(
-    () => {
-      if (code) {
-        runAsync({ code }).then((res) => {
-          if (res?.code === 200) {
-            if (res?.data?.orderStatus !== 201) {
-              return Toast.show({
-                content: `该订单${
-                  orderStatusText[res?.data?.orderStatus] || "不在可预约状态内"
-                }`,
-                icon: "fail",
-                duration: 0,
-                closeOnOverlayClick: false,
-                style: {
-                  background: "rgba(0, 0, 0, 0.7)",
-                },
-              });
-            }
-            setOrderInfo(res?.data);
-          } else {
-            Toast.show({
-              content: res?.msg,
+  useEffect(() => {
+    if (code) {
+      runAsync({ code }).then((res) => {
+        if (res?.code === 200) {
+          if (res?.data?.orderStatus !== 201) {
+            return Toast.show({
+              content: `该订单${
+                orderStatusText[res?.data?.orderStatus] || "不在可预约状态内"
+              }`,
               icon: "fail",
               duration: 0,
               closeOnOverlayClick: false,
@@ -80,24 +67,31 @@ const Book = () => {
               },
             });
           }
-        });
-      } else {
-        Toast.show({
-          content: "未获取到预约编码",
-          icon: "fail",
-          duration: 0,
-          closeOnOverlayClick: false,
-          style: {
-            background: "rgba(0, 0, 0, 0.7)",
-          },
-        });
-      }
-    },
-    [code],
-    {
-      wait: 500,
+          setOrderInfo(res?.data);
+        } else {
+          Toast.show({
+            content: res?.msg,
+            icon: "fail",
+            duration: 0,
+            closeOnOverlayClick: false,
+            style: {
+              background: "rgba(0, 0, 0, 0.7)",
+            },
+          });
+        }
+      });
+    } else {
+      Toast.show({
+        content: "未获取到预约编码",
+        icon: "fail",
+        duration: 0,
+        closeOnOverlayClick: false,
+        style: {
+          background: "rgba(0, 0, 0, 0.7)",
+        },
+      });
     }
-  );
+  }, [code]);
 
   const address = useMemo(() => {
     return formState?.province
