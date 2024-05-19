@@ -20,11 +20,23 @@ import { orderStatusText } from "@/constants";
 import Logo from "@/assets/logo.png";
 import "./index.scss";
 
+const showErrorToast = (content, duration = 0, closeOnOverlayClick = false) => {
+  Toast.show({
+    content,
+    icon: "fail",
+    duration,
+    closeOnOverlayClick,
+    style: {
+      background: "rgba(0, 0, 0, 0.7)",
+    },
+  });
+};
+
 const Book = () => {
   const [visible, setVisible] = useState<boolean>(false);
   const [selectTimeVisible, setSelectTimeVisible] = useState<boolean>(false);
   const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
-  const [submitDisabled, setSubmitDisabled] = useState<boolean>(false);
+  const [submitDisabled, setSubmitDisabled] = useState<boolean>(true);
   const { code } = useParams() || {
     code: null,
   };
@@ -52,46 +64,35 @@ const Book = () => {
 
   useEffect(() => {
     if (code) {
-      runAsync({ code }).then((res) => {
-        if (res?.code === 200) {
-          if (res?.data?.orderStatus !== 201) {
-            setSubmitDisabled(true);
-            return Toast.show({
-              content: `该订单${
+      runAsync({ code })
+        .then((res) => {
+          if (res?.code === 200) {
+            if (res?.data?.orderStatus === 201) {
+              setSubmitDisabled(false);
+              return;
+            }
+            showErrorToast(
+              `该订单${
                 orderStatusText[res?.data?.orderStatus] || "不在可预约状态内"
-              }`,
-              icon: "fail",
-              duration: 0,
-              closeOnOverlayClick: false,
-              style: {
-                background: "rgba(0, 0, 0, 0.7)",
-              },
-            });
+              }`
+            );
+          } else {
+            showErrorToast(res?.msg || "获取订单信息失败");
           }
-        } else {
-          setSubmitDisabled(true);
-          Toast.show({
-            content: res?.msg,
-            icon: "fail",
-            duration: 0,
-            closeOnOverlayClick: false,
-            style: {
-              background: "rgba(0, 0, 0, 0.7)",
-            },
-          });
-        }
-      });
+        })
+        ?.catch((err) => {
+          if (err?.message) {
+            showErrorToast("服务器错误，请稍后再试");
+          }
+        });
     } else {
-      Toast.show({
-        content: "未获取到预约编码",
-        icon: "fail",
-        duration: 0,
-        closeOnOverlayClick: false,
-        style: {
-          background: "rgba(0, 0, 0, 0.7)",
-        },
-      });
+      showErrorToast("未获取到预约编码");
     }
+
+    return () => {
+      Toast.clear();
+      setSubmitDisabled(true);
+    };
   }, [code]);
 
   const address = useMemo(() => {
@@ -127,22 +128,32 @@ const Book = () => {
     await postRun({
       ...(formState as any),
       code,
-    }).then((res) => {
-      if (res?.code === 200) {
-        setConfirmVisible(false);
-        setSubmitDisabled(true);
-        Toast.show({
-          content: "预约成功，以网点预约上门时间为准",
-          icon: "success",
-          duration: 0,
-        });
-      } else {
-        Toast.show({
-          content: res?.msg,
-          icon: "fail",
-        });
-      }
-    });
+    })
+      .then((res) => {
+        if (res?.code === 200) {
+          setConfirmVisible(false);
+          setSubmitDisabled(true);
+          Toast.show({
+            content: "预约成功，以网点预约上门时间为准",
+            icon: "success",
+            duration: 0,
+            closeOnOverlayClick: false,
+          });
+        } else {
+          Toast.show({
+            content: res?.msg || "预约失败",
+            icon: "fail",
+          });
+        }
+      })
+      ?.catch((err) => {
+        if (err?.message) {
+          Toast.show({
+            content: err?.message,
+            icon: "fail",
+          });
+        }
+      });
   };
 
   return (
