@@ -1,13 +1,13 @@
 import axios from "axios";
 
 const BASE_API_URL = import.meta.env.API_BASE_URL;
+const instance = axios.create({
+  baseURL: BASE_API_URL,
+});
 
 //【H5预约】获取订单信息
 export const getOrderInfo = async (params: { code: string }): Promise<any> => {
-  const response = await axios.post(
-    `${BASE_API_URL}/book/getOrderInfo`,
-    params
-  );
+  const response = await instance.post("/book/getOrderInfo", params);
   return response.data;
 };
 
@@ -16,7 +16,7 @@ export const getAvailableAddressList = async (params: {
   regionId: string;
   code: string;
 }): Promise<any> => {
-  const response = await axios.post(`${BASE_API_URL}/book/areaList`, params);
+  const response = await instance.post("/book/areaList", params);
   return response.data;
 };
 
@@ -24,10 +24,7 @@ export const getAvailableAddressList = async (params: {
 export const postOrderAppointmentTimeList = async (params: {
   code: string;
 }): Promise<any> => {
-  const response = await axios.post(
-    `${BASE_API_URL}/book/appointmentTimeList`,
-    params
-  );
+  const response = await instance.post("/book/appointmentTimeList", params);
   return response.data;
 };
 
