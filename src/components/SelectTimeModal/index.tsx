@@ -82,7 +82,6 @@ const SelectTimeModal = ({ visible, value, onClose, onConfirm, code }) => {
 
   return (
     <Picker
-      className="time-select-modal"
       options={[appointmentDateList, appointmentTimeList]}
       title="选择上门时间"
       visible={visible}
