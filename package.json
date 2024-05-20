@@ -13,6 +13,7 @@
     "@nutui/nutui-react": "^2.6.4",
     "ahooks": "^3.7.11",
     "axios": "^1.6.8",
+    "postcss-px-to-viewport": "^1.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.1"

@@ -158,7 +158,7 @@ const Book = () => {
 
   return (
     <>
-      <NavBar titleAlign="center" left={<Image src={Logo} width="30px" />}>
+      <NavBar titleAlign="center" left={<Image src={Logo} width="40" />}>
         美的洗悦家预约
       </NavBar>
       <div className="addAddress">
