@@ -185,7 +185,7 @@ const Book = () => {
           <span className="addAddress-input-label">所在地区</span>
           <div className="addAddress-input-value">
             <span className="addAddress-input-label">{address}</span>
-            <ArrowRight />
+            <ArrowRight width={12} />
           </div>
         </div>
         <div className="mb-12">
@@ -207,7 +207,7 @@ const Book = () => {
                 ? `${formState?.appointmentDate} ${formState?.appointmentTime}`
                 : "请选择"}
             </span>
-            <ArrowRight />
+            <ArrowRight width={12} />
           </div>
         </div>
         {/* 提交成功后，刷新订单详情，若为服务中状态。不可再次预约 */}
