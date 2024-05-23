@@ -20,15 +20,16 @@ import { orderStatusText } from "@/constants";
 import Logo from "@/assets/logo.png";
 import "./index.scss";
 
+const style = {
+  background: "rgba(0, 0, 0, 0.5)",
+};
 const showErrorToast = (content, duration = 0, closeOnOverlayClick = false) => {
   Toast.show({
     content,
     icon: "fail",
     duration,
     closeOnOverlayClick,
-    style: {
-      background: "rgba(0, 0, 0, 0.7)",
-    },
+    style,
   });
 };
 
@@ -119,6 +120,7 @@ const Book = () => {
           Toast.show({
             content: err?.message,
             icon: "fail",
+            style,
           });
         }
       });
@@ -138,11 +140,13 @@ const Book = () => {
             icon: "success",
             duration: 0,
             closeOnOverlayClick: false,
+            style,
           });
         } else {
           Toast.show({
             content: res?.msg || "预约失败",
             icon: "fail",
+            style,
           });
         }
       })
@@ -151,6 +155,7 @@ const Book = () => {
           Toast.show({
             content: err?.message,
             icon: "fail",
+            style,
           });
         }
       });
